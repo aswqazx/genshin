@@ -219,6 +219,24 @@ class Sign(Base):
             messgae['total_sign_day'] = total_sign_day + 1
             messgae['status'] = response['message']
             message_list.append(self.message.format(**messgae))
+            
+            data2 = {
+                'gids': 2
+            }
+            
+            try:
+                content = requests.Session().post(
+                    CONFIG.BBS_SIGN_URL,
+                    headers=self.get_header(),
+                    data=json.dumps(data2, ensure_ascii=False)).text
+                response = self.to_python(content)
+            except Exception as e:
+                raise Exception(e)
+            code = response.get('retcode', 99999)
+            # 0:      success
+            # -5003:  already signed in
+            log.info(f'response === {response} ')
+            
         log.info('签到完毕')
 
         return ''.join(message_list)
