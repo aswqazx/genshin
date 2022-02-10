@@ -225,6 +225,23 @@ class Sign(Base):
         return ''.join(message_list)
     
     def run2(self):
+        log.info('签到2开始...')
+        data = {
+                'gids': 2
+            }
+
+            try:
+                content = requests.Session().post(
+                    CONFIG.BBS_SIGN_URL,
+                    headers=self.get_header(),
+                    data=json.dumps(data, ensure_ascii=False)).text
+                response = self.to_python(content)
+            except Exception as e:
+                raise Exception(e)
+            code = response.get('retcode', 99999)
+            # 0:      success
+            # -5003:  already signed in
+            log.info({response})
         log.info('签到完毕2')
         return ''
 
