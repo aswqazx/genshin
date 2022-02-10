@@ -241,7 +241,7 @@ class Sign(Base):
             code = response.get('retcode', 99999)
             # 0:      success
             # -5003:  already signed in
-            log.info({response})
+            log.info({response['message']})
         log.info('签到完毕2')
         return ''
 
