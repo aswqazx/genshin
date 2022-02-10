@@ -16,7 +16,7 @@ import requests
 from requests.exceptions import HTTPError
 
 from settings import log, CONFIG
-#from notify import Notify
+from notify import Notify
 
 
 def hexdigest(text):
@@ -220,27 +220,13 @@ class Sign(Base):
             messgae['status'] = response['message']
             message_list.append(self.message.format(**messgae))
             
-            log.info(f'response ====')
-            data2 = {
-                'gids': 2
-            }
-            
-            try:
-                content = requests.Session().post(
-                    CONFIG.BBS_SIGN_URL,
-                    headers=self.get_header(),
-                    data=json.dumps(data2, ensure_ascii=False)).text
-                response = self.to_python(content)
-            except Exception as e:
-                raise Exception(e)
-            code = response.get('retcode', 99999)
-            # 0:      success
-            # -5003:  already signed in
-            log.info(f'code === {code}')
-            
         log.info('签到完毕')
 
         return ''.join(message_list)
+    
+    def run2(self):
+        log.info('签到完毕2')
+        return ''
 
     @property
     def message(self):
@@ -249,7 +235,7 @@ class Sign(Base):
 
 if __name__ == '__main__':
     log.info('任务开始')
-    #notify = Notify()
+    notify = Notify()
     msg_list = []
     ret = success_num = fail_num = 0
     # ============= miHoYo BBS COOKIE ============
@@ -276,7 +262,7 @@ if __name__ == '__main__':
             log.error(msg)
             ret = -1
         continue
-    #notify.send(status=f'成功: {success_num} | 失败: {fail_num}', msg=msg_list)
+    notify.send(status=f'成功: {success_num} | 失败: {fail_num}', msg=msg_list)
     if ret != 0:
         log.error('异常退出')
         exit(ret)
