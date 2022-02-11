@@ -27,7 +27,7 @@ class _Config:
     USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) ' \
                  'miHoYoBBS/{}'.format(APP_VERSION)
     
-    BBS_SIGN_URL = 'https://bbs-api.mihoyo.com/apihub/app/api/signIn'
+    BBS_SIGN_URL = 'https://bbs-api.mihoyo.com/apihub/app/api/signIn?gids=2'
 
 
 class ProductionConfig(_Config):
