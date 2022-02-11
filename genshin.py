@@ -108,15 +108,18 @@ class Sign(Base):
         self._uid_list = []
 
     @staticmethod
-    def get_ds():
+    def get_ds(ds_type: str = None):
         # v2.3.0-web @povsister & @journey-ad
         n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
+        if ds_type == 'bbssign':
+            n = 'dmq2p7ka6nsu0d3ev6nex4k1ndzrnfiy'
+        
         i = str(int(time.time()))
         r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
         c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
         return '{},{},{}'.format(i, r, c)
 
-    def get_header(self):
+    def get_header(self, ds_type: str = None):
         header = super(Sign, self).get_header()
         header.update({
             'x-rpc-device_id':str(uuid.uuid3(
@@ -127,7 +130,13 @@ class Sign(Base):
             # 5:  mobile web
             'x-rpc-client_type': '5',
             'x-rpc-app_version': CONFIG.APP_VERSION,
-            'DS': self.get_ds(),
+            'DS': self.get_ds(ds_type),
+        })
+        if ds_type == 'bbssign':
+            header.update({
+            'x-rpc-client_type': '2',
+            'x-rpc-app_version': '2.8.0',
+            'DS': self.get_ds(ds_type),
         })
         return header
 
@@ -154,7 +163,7 @@ class Sign(Base):
                 self._region_list[i], CONFIG.ACT_ID, self._uid_list[i])
             try:
                 content = requests.Session().get(
-                    info_url, headers=self.get_header()).text
+                    info_url, headers=self.get_header(ds_type='')).text
                 info_list.append(self.to_python(content))
             except Exception as e:
                 raise Exception(e)
@@ -205,7 +214,7 @@ class Sign(Base):
             try:
                 content = requests.Session().post(
                     CONFIG.SIGN_URL,
-                    headers=self.get_header(),
+                    headers=self.get_header(ds_type=''),
                     data=json.dumps(data, ensure_ascii=False)).text
                 response = self.to_python(content)
             except Exception as e:
@@ -219,29 +228,11 @@ class Sign(Base):
             messgae['total_sign_day'] = total_sign_day + 1
             messgae['status'] = response['message']
             message_list.append(self.message.format(**messgae))
-            
         log.info('签到完毕')
 
         return ''.join(message_list)
+        
     
-    def get_ds2():
-        # v2.3.0-web @povsister & @journey-ad
-        n = 'dmq2p7ka6nsu0d3ev6nex4k1ndzrnfiy'
-        i = str(int(time.time()))
-        r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
-        c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
-        return '{},{},{}'.format(i, r, c)
-
-    def get_header2(self):
-        header = super(Sign, self).get_header()
-        header.update({
-            'x-rpc-device_id':str(uuid.uuid3(
-                uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
-            'x-rpc-client_type': '2',
-            'x-rpc-app_version': '2.8.0',
-            'DS': self.get_ds2(),
-        })
-        return header
         
     def run2(self):
         time.sleep(10)
@@ -252,7 +243,7 @@ class Sign(Base):
         try:
             content = requests.Session().post(
                 CONFIG.BBS_SIGN_URL,
-                headers=self.get_header2(),
+                headers=self.get_header(ds_type='bbssign'),
                 data=json.dumps(data, ensure_ascii=False)).text
             response = self.to_python(content)
         except Exception as e:
