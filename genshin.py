@@ -24,11 +24,6 @@ def hexdigest(text):
     md5.update(text.encode())
     return md5.hexdigest()
 
-def cookie_to_dict(cookie):
-    if cookie and '=' in cookie:
-        cookie = dict([line.strip().split('=', 1) for line in cookie.split(';')])
-    return cookie
-
 
 class Base(object):
     def __init__(self, cookies: str = None):
@@ -113,47 +108,27 @@ class Sign(Base):
         self._uid_list = []
 
     @staticmethod
-    def get_ds(ds_type: str = None):
-        if ds_type == 'bbssign':
-            n = 'dmq2p7ka6nsu0d3ev6nex4k1ndzrnfiy'
-        else:
-            # v2.3.0-web @povsister & @journey-ad
-            n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
-        
+    def get_ds():
+        # v2.3.0-web @povsister & @journey-ad
+        n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
         i = str(int(time.time()))
         r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
         c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
-        log.info(f'n===== {n} =====')
         return '{},{},{}'.format(i, r, c)
 
-    def get_header(self, ds_type: str = None):
+    def get_header(self):
         header = super(Sign, self).get_header()
-        if ds_type == 'bbssign':
-            self.cookie = cookie_to_dict(self._cookie)
-            log.info(f'self.cookie===== {self.cookie} =====')
-            header.update({
-                'x-rpc-device_id':str(uuid.uuid3(
-                    uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
-                'x-rpc-client_type': '2',
-                'x-rpc-app_version': '2.8.0',
-                'DS': self.get_ds(ds_type),
-                'User-Agent': 'okhttp/4.8.0',
-                'Referer': 'https://app.mihoyo.com',
-                'x-rpc-channel': 'miyousheluodi',
-                'Cookie': self.cookie
-            })
-        else:
-            header.update({
-                'x-rpc-device_id':str(uuid.uuid3(
+        header.update({
+            'x-rpc-device_id':str(uuid.uuid3(
                 uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
-                # 1:  ios
-                # 2:  android
-                # 4:  pc web
-                # 5:  mobile web
-                'x-rpc-client_type': '5',
-                'x-rpc-app_version': CONFIG.APP_VERSION,
-                'DS': self.get_ds(ds_type)
-            })
+            # 1:  ios
+            # 2:  android
+            # 4:  pc web
+            # 5:  mobile web
+            'x-rpc-client_type': '5',
+            'x-rpc-app_version': CONFIG.APP_VERSION,
+            'DS': self.get_ds(),
+        })
         return header
 
     def get_info(self):
@@ -179,7 +154,7 @@ class Sign(Base):
                 self._region_list[i], CONFIG.ACT_ID, self._uid_list[i])
             try:
                 content = requests.Session().get(
-                    info_url, headers=self.get_header(ds_type='')).text
+                    info_url, headers=self.get_header()).text
                 info_list.append(self.to_python(content))
             except Exception as e:
                 raise Exception(e)
@@ -230,7 +205,7 @@ class Sign(Base):
             try:
                 content = requests.Session().post(
                     CONFIG.SIGN_URL,
-                    headers=self.get_header(ds_type=''),
+                    headers=self.get_header(),
                     data=json.dumps(data, ensure_ascii=False)).text
                 response = self.to_python(content)
             except Exception as e:
@@ -247,28 +222,6 @@ class Sign(Base):
         log.info('签到完毕')
 
         return ''.join(message_list)
-        
-    
-        
-    def run2(self):
-        time.sleep(10)
-        
-        data = ''
-        
-        try:
-            content = requests.Session().post(
-                CONFIG.BBS_SIGN_URL,
-                headers=self.get_header(ds_type='bbssign'), data=data).text
-            response = self.to_python(content)
-        except Exception as e:
-            raise Exception(e)
-        code = response.get('retcode', 99999)
-        log.info(f'code===== {code} =====')
-        # 0:      success
-        # -5003:  already signed in
-        log.info('签到完毕2')
-
-        return ''
 
     @property
     def message(self):
@@ -295,7 +248,6 @@ if __name__ == '__main__':
         log.info(f'准备为 NO.{i + 1} 账号签到...')
         try:
             msg = f'	NO.{i + 1} 账号:{Sign(cookie_list[i]).run()}'
-            Sign(cookie_list[i]).run2()
             msg_list.append(msg)
             success_num = success_num + 1
         except Exception as e:
