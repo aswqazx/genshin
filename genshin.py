@@ -224,6 +224,25 @@ class Sign(Base):
 
         return ''.join(message_list)
     
+    def get_ds2():
+        # v2.3.0-web @povsister & @journey-ad
+        n = 'dmq2p7ka6nsu0d3ev6nex4k1ndzrnfiy'
+        i = str(int(time.time()))
+        r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
+        c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
+        return '{},{},{}'.format(i, r, c)
+
+    def get_header2(self):
+        header = super(Sign, self).get_header()
+        header.update({
+            'x-rpc-device_id':str(uuid.uuid3(
+                uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
+            'x-rpc-client_type': '2',
+            'x-rpc-app_version': '2.8.0',
+            'DS': self.get_ds2(),
+        })
+        return header
+        
     def run2(self):
         time.sleep(10)
         data = {
@@ -233,7 +252,7 @@ class Sign(Base):
         try:
             content = requests.Session().post(
                 CONFIG.BBS_SIGN_URL,
-                headers=self.get_header(),
+                headers=self.get_header2(),
                 data=json.dumps(data, ensure_ascii=False)).text
             response = self.to_python(content)
         except Exception as e:
