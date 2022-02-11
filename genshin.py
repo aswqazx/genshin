@@ -109,10 +109,11 @@ class Sign(Base):
 
     @staticmethod
     def get_ds(ds_type: str = None):
-        # v2.3.0-web @povsister & @journey-ad
-        n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
         if ds_type == 'bbssign':
             n = 'dmq2p7ka6nsu0d3ev6nex4k1ndzrnfiy'
+        else:
+            # v2.3.0-web @povsister & @journey-ad
+            n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
         
         i = str(int(time.time()))
         r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
@@ -122,23 +123,26 @@ class Sign(Base):
 
     def get_header(self, ds_type: str = None):
         header = super(Sign, self).get_header()
-        header.update({
-            'x-rpc-device_id':str(uuid.uuid3(
-                uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
-            # 1:  ios
-            # 2:  android
-            # 4:  pc web
-            # 5:  mobile web
-            'x-rpc-client_type': '5',
-            'x-rpc-app_version': CONFIG.APP_VERSION,
-            'DS': self.get_ds(ds_type),
-        })
         if ds_type == 'bbssign':
             header.update({
-            'x-rpc-client_type': '2',
-            'x-rpc-app_version': '2.8.0',
-            'DS': self.get_ds(ds_type),
-        })
+                'x-rpc-device_id':str(uuid.uuid3(
+                    uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
+                'x-rpc-client_type': '2',
+                'x-rpc-app_version': '2.8.0',
+                'DS': self.get_ds(ds_type),
+            })
+        else:
+            header.update({
+                'x-rpc-device_id':str(uuid.uuid3(
+                uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
+                # 1:  ios
+                # 2:  android
+                # 4:  pc web
+                # 5:  mobile web
+                'x-rpc-client_type': '5',
+                'x-rpc-app_version': CONFIG.APP_VERSION,
+                'DS': self.get_ds(ds_type),
+            })
         return header
 
     def get_info(self):
