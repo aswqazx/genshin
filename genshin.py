@@ -117,6 +117,7 @@ class Sign(Base):
         i = str(int(time.time()))
         r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
         c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
+        log.info(f'n===== {n} =====')
         return '{},{},{}'.format(i, r, c)
 
     def get_header(self, ds_type: str = None):
