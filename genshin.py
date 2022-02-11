@@ -236,15 +236,10 @@ class Sign(Base):
         
     def run2(self):
         time.sleep(10)
-        data = {
-            'gids': 2
-        }
-
         try:
             content = requests.Session().post(
                 CONFIG.BBS_SIGN_URL,
-                headers=self.get_header(ds_type='bbssign'),
-                data=json.dumps(data, ensure_ascii=False)).text
+                headers=self.get_header(ds_type='bbssign'), '').text
             response = self.to_python(content)
         except Exception as e:
             raise Exception(e)
