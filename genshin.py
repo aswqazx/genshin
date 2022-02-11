@@ -24,6 +24,11 @@ def hexdigest(text):
     md5.update(text.encode())
     return md5.hexdigest()
 
+def cookie_to_dict(cookie):
+    if cookie and '=' in cookie:
+        cookie = dict([line.strip().split('=', 1) for line in cookie.split(';')])
+    return cookie
+
 
 class Base(object):
     def __init__(self, cookies: str = None):
