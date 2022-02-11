@@ -130,6 +130,9 @@ class Sign(Base):
                 'x-rpc-client_type': '2',
                 'x-rpc-app_version': '2.8.0',
                 'DS': self.get_ds(ds_type),
+                'User-Agent': 'okhttp/4.8.0',
+                'Referer': 'https://app.mihoyo.com',
+                'x-rpc-channel': 'miyousheluodi'
             })
         else:
             header.update({
@@ -141,7 +144,7 @@ class Sign(Base):
                 # 5:  mobile web
                 'x-rpc-client_type': '5',
                 'x-rpc-app_version': CONFIG.APP_VERSION,
-                'DS': self.get_ds(ds_type),
+                'DS': self.get_ds(ds_type)
             })
         return header
 
