@@ -124,6 +124,8 @@ class Sign(Base):
     def get_header(self, ds_type: str = None):
         header = super(Sign, self).get_header()
         if ds_type == 'bbssign':
+            self.cookie = cookie_to_dict(self._cookie)
+            log.info(f'self.cookie===== {self.cookie} =====')
             header.update({
                 'x-rpc-device_id':str(uuid.uuid3(
                     uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
@@ -132,7 +134,8 @@ class Sign(Base):
                 'DS': self.get_ds(ds_type),
                 'User-Agent': 'okhttp/4.8.0',
                 'Referer': 'https://app.mihoyo.com',
-                'x-rpc-channel': 'miyousheluodi'
+                'x-rpc-channel': 'miyousheluodi',
+                'Cookie': self.cookie
             })
         else:
             header.update({
