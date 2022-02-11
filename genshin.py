@@ -223,6 +223,28 @@ class Sign(Base):
         log.info('签到完毕')
 
         return ''.join(message_list)
+    
+    def run2(self):
+        time.sleep(10)
+        data = {
+            'gids': 2
+        }
+
+        try:
+            content = requests.Session().post(
+                CONFIG.BBS_SIGN_URL,
+                headers=self.get_header(),
+                data=json.dumps(data, ensure_ascii=False)).text
+            response = self.to_python(content)
+        except Exception as e:
+            raise Exception(e)
+        code = response.get('retcode', 99999)
+        log.info(f'code===== {code} =====')
+        # 0:      success
+        # -5003:  already signed in
+        log.info('签到完毕2')
+
+        return ''
 
     @property
     def message(self):
@@ -249,6 +271,7 @@ if __name__ == '__main__':
         log.info(f'准备为 NO.{i + 1} 账号签到...')
         try:
             msg = f'	NO.{i + 1} 账号:{Sign(cookie_list[i]).run()}'
+            Sign(cookie_list[i]).run2()
             msg_list.append(msg)
             success_num = success_num + 1
         except Exception as e:
